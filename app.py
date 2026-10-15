@@ -6,13 +6,6 @@ Founder & Lead Quant Architect: Pankaj Singh
 Contact: Maahi.gt@gmail.com | +91 7877293754
 Target System: Local Machine (Windows CMD / VS Code, 8GB RAM, NVIDIA MX130 GPU)
 ================================================================================
-How to run locally on Windows:
-1. Open Windows Command Prompt or VS Code Terminal
-2. Install required dependencies:
-   pip install streamlit pandas numpy plotly yfinance streamlit-autorefresh
-3. Run the application:
-   streamlit run app.py
-================================================================================
 """
 
 import streamlit as st
@@ -25,7 +18,7 @@ from datetime import datetime, timedelta
 import time
 
 # -----------------------------------------------------------------------------
-# 1. STREAMLIT APP CONFIGURATION (Wide Layout, Dark Theme, Page Title)
+# 1. STREAMLIT APP CONFIGURATION
 # -----------------------------------------------------------------------------
 st.set_page_config(
     page_title="Zero to Comma | POWER of MOMENTUM",
@@ -35,14 +28,12 @@ st.set_page_config(
 )
 
 # -----------------------------------------------------------------------------
-# 2. INJECT ULTRA-SLEEK FINANCIAL TERMINAL CSS (#030712 + Plus Jakarta Sans)
+# 2. INJECT ULTRA-SLEEK FINANCIAL TERMINAL CSS
 # -----------------------------------------------------------------------------
 TERMINAL_CSS = """
 <style>
-/* Import Google Fonts: Plus Jakarta Sans & JetBrains Mono */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-/* Force Hide Default Streamlit Sidebar completely */
 [data-testid="stSidebar"], section[data-testid="stSidebar"] {
     display: none !important;
 }
@@ -50,14 +41,12 @@ TERMINAL_CSS = """
     display: none !important;
 }
 
-/* Base Body & App Styling */
 html, body, [class*="css"], .stApp {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
     background-color: #030712 !important;
     color: #f3f4f6 !important;
 }
 
-/* Main Container Padding Reduction */
 .block-container {
     padding-top: 0.8rem !important;
     padding-bottom: 2rem !important;
@@ -66,7 +55,6 @@ html, body, [class*="css"], .stApp {
     max-width: 1440px !important;
 }
 
-/* Glassmorphism Cards */
 .terminal-card {
     background: rgba(15, 23, 42, 0.75);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -80,13 +68,11 @@ html, body, [class*="css"], .stApp {
     border-color: rgba(16, 185, 129, 0.3);
 }
 
-/* Financial Terminal Monospace Numbers */
 .mono-val {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
 }
 
-/* Marquee Ticker Bar */
 .ticker-wrap {
     width: 100%;
     overflow: hidden;
@@ -118,18 +104,10 @@ html, body, [class*="css"], .stApp {
     100% { transform: translate3d(-50%, 0, 0); }
 }
 
-/* Positive & Negative Colors */
-.pos-green {
-    color: #10b981 !important;
-}
-.neg-red {
-    color: #ef4444 !important;
-}
-.neutral-gray {
-    color: #9ca3af !important;
-}
+.pos-green { color: #10b981 !important; }
+.neg-red { color: #ef4444 !important; }
+.neutral-gray { color: #9ca3af !important; }
 
-/* Streamlit Native Button Overrides */
 div.stButton > button {
     background-color: #0f172a !important;
     color: #e2e8f0 !important;
@@ -146,7 +124,6 @@ div.stButton > button:hover {
     color: #ffffff !important;
 }
 
-/* Form inputs */
 input, textarea, select {
     background-color: #0b0f19 !important;
     color: #f3f4f6 !important;
@@ -177,7 +154,7 @@ if "portfolio" not in st.session_state:
     ]
 
 # -----------------------------------------------------------------------------
-# 4. MARKET DATA ENGINE (Nifty 500 Momentum Stocks & Benchmarks)
+# 4. MARKET DATA UNIVERSE
 # -----------------------------------------------------------------------------
 MOMENTUM_UNIVERSE = [
     {"symbol": "TRENT.NS", "name": "Trent Ltd", "ticker": "TRENT", "sector": "Retail", "circuit": "20%", "fo": "Active", "base_price": 7180.0, "change_pct": 2.45, "high_52w": 7450.0, "rs_rank": 98, "m1": 8.4, "m3": 38.6, "m6": 72.1, "m12": 145.2},
@@ -208,40 +185,8 @@ GLOBAL_INDICES = [
     {"name": "DOW JONES", "symbol": "^DJI", "price": 43120.40, "change": "+95.80", "pct": "+0.22%", "is_pos": True},
 ]
 
-@st.cache_data(ttl=300, show_spinner=False)
-def fetch_live_stock_history(symbol: str, period="6mo"):
-    try:
-        ticker = yf.Ticker(symbol)
-        df = ticker.history(period=period)
-        if df.empty or len(df) < 5:
-            raise ValueError("Empty data returned")
-        df['20_EMA'] = df['Close'].ewm(span=20, adjust=False).mean()
-        df['50_SMA'] = df['Close'].rolling(window=50).mean()
-        df['200_SMA'] = df['Close'].rolling(window=200).mean()
-        return df
-    except Exception:
-        dates = pd.date_range(end=datetime.now(), periods=120, freq='B')
-        np.random.seed(abs(hash(symbol)) % 10000)
-        returns = np.random.normal(0.002, 0.018, size=120)
-        base = 1000.0
-        prices = base * np.cumprod(1 + returns)
-        highs = prices * (1 + np.random.uniform(0.002, 0.015, size=120))
-        lows = prices * (1 - np.random.uniform(0.002, 0.015, size=120))
-        volume = np.random.randint(100000, 2500000, size=120)
-        df = pd.DataFrame({
-            'Open': prices * (1 - np.random.uniform(-0.005, 0.005, size=120)),
-            'High': highs,
-            'Low': lows,
-            'Close': prices,
-            'Volume': volume
-        }, index=dates)
-        df['20_EMA'] = df['Close'].ewm(span=20, adjust=False).mean()
-        df['50_SMA'] = df['Close'].rolling(window=50).mean()
-        df['200_SMA'] = df['Close'].rolling(window=200).mean()
-        return df
-
 # -----------------------------------------------------------------------------
-# 5. TOP HEADER
+# 5. TOP HEADER & TICKER
 # -----------------------------------------------------------------------------
 def render_top_header():
     col_brand, col_nav = st.columns([4, 6])
@@ -261,6 +206,7 @@ def render_top_header():
             </div>
         </div>
         """, unsafe_allow_html=True)
+    
     with col_nav:
         n1, n2, n3, n4, n5 = st.columns(5)
         with n1:
@@ -303,7 +249,7 @@ def render_top_header():
     """, unsafe_allow_html=True)
 
 # -----------------------------------------------------------------------------
-# 6. PAGES
+# 6. PAGES RENDERING
 # -----------------------------------------------------------------------------
 def render_home_page():
     st.markdown("""
@@ -374,7 +320,7 @@ def render_founder_page():
     **Founder & Lead Quant Architect** — Zero to Comma ("POWER of MOMENTUM")  
     - Email: **Maahi.gt@gmail.com**  
     - Phone / WhatsApp: **+91 7877293754**  
-    
+     
     *From Enterprise IT & Systems Automation to 100% Rule-Based Quantitative Momentum.*
     """)
 
